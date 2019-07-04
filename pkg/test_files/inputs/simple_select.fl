@@ -1,13 +1,9 @@
 Users {
-    ID = ID | ToGuid "UserPrefix"
-    Name = Name
-    Phone = Phone | Decrypt | Encrypt
-    Password = Password | Decrypt | Hash
-}
-
-Appointments {
-    ID = ID | ToGuid "UserPrefix"
-    Name = Name
-    Phone = Phone | Decrypt | Encrypt
-    Password = Password | Decrypt | Hash
+    `SAMPLE ho = 1 b = " dd" QUERY`
+    {
+        ID = ID | ToGuid "UserPrefix"
+        Name = Name
+        Phone = Phone | Decrypt | Encrypt
+        Password = Password | Decrypt | Hash
+    }
 }

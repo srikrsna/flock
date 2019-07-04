@@ -1,0 +1,60 @@
+&flock.Flock{
+	Entries: []*flock.Entry{
+		&flock.Entry{
+			Name: "Random",
+			Query: "SELECT * FROM RandomSource WHERE First= @first, Third = @third",
+			Fields: []*flock.Field{
+				&flock.Field{
+					Key: "First",
+					Value: "first",
+					Functions: []*flock.FieldFunc{
+						&flock.FieldFunc{
+							Name: "toGuid",
+							Parameters: []*flock.FuncParameter{
+								&flock.FuncParameter{
+									String: &"kascet",
+								},
+							},
+						},
+					},
+				},
+				&flock.Field{
+					Key: "Second",
+					Value: "two",
+					Functions: []*flock.FieldFunc{
+						&flock.FieldFunc{
+							Name: "Nil",
+							Parameters: []*flock.FuncParameter{
+								&flock.FuncParameter{
+									Key: &"ko",
+								},
+							},
+						},
+					},
+				},
+				&flock.Field{
+					Key: "Third",
+					Value: "three",
+					Functions: []*flock.FieldFunc{
+						&flock.FieldFunc{
+							Name: "Decrypt",
+							Parameters: []*flock.FuncParameter{
+								&flock.FuncParameter{
+									String: &"oldkey",
+								},
+							},
+						},
+						&flock.FieldFunc{
+							Name: "Encrypt",
+							Parameters: []*flock.FuncParameter{
+								&flock.FuncParameter{
+									String: &"newkey",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}

@@ -3,15 +3,17 @@ package flock_test
 import (
 	"bytes"
 	"flag"
-	"github.com/alecthomas/repr"
-	"github.com/sergi/go-diff/diffmatchpatch"
-	"github.com/srikrsna/flock/pkg"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/alecthomas/repr"
+	"github.com/sergi/go-diff/diffmatchpatch"
+	flock "github.com/srikrsna/flock/pkg"
 )
 
-var replace = flag.Bool("replace", false, "Replace flag replaces the output files instead of comparing them")
+var replacef = flag.Bool("replacef", false, "Replace flag replaces the flock output files specifically instead of comparing them")
+var replace = flag.Bool("replace", false, "Replace flag replaces both the flock and table output files instead of comparing them")
 
 var printOpts = []repr.Option{
 	repr.Indent("\t"),
@@ -28,10 +30,11 @@ func TestParseSchema(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"simple_select.fl",
+			"test.fl",
 			false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.Open(inPath + tt.name)
@@ -44,8 +47,9 @@ func TestParseSchema(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseSchema() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
-			if *replace {
+			v, ok := fl.Entries[0].Fields[0].Functions[0].Parameters[0].Value()
+			t.Logf("***************** %v -- %v", v, ok)
+			if *replace || *replacef {
 				f, err := os.Create(outPath + tt.name)
 				if err != nil {
 					t.Fatal(err)

@@ -3,13 +3,12 @@
 
 package flock
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -21,12 +20,14 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type FlockRequest struct {
 	// Types that are valid to be assigned to Value:
+	//	*FlockRequest_Start
 	//	*FlockRequest_Ping
 	//	*FlockRequest_Batch
+	//	*FlockRequest_End
 	Value                isFlockRequest_Value `protobuf_oneof:"value"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
@@ -37,16 +38,17 @@ func (m *FlockRequest) Reset()         { *m = FlockRequest{} }
 func (m *FlockRequest) String() string { return proto.CompactTextString(m) }
 func (*FlockRequest) ProtoMessage()    {}
 func (*FlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{0}
+	return fileDescriptor_0dfcec39829db5bd, []int{0}
 }
+
 func (m *FlockRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FlockRequest.Unmarshal(m, b)
 }
 func (m *FlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_FlockRequest.Marshal(b, m, deterministic)
 }
-func (dst *FlockRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FlockRequest.Merge(dst, src)
+func (m *FlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FlockRequest.Merge(m, src)
 }
 func (m *FlockRequest) XXX_Size() int {
 	return xxx_messageInfo_FlockRequest.Size(m)
@@ -61,19 +63,40 @@ type isFlockRequest_Value interface {
 	isFlockRequest_Value()
 }
 
-type FlockRequest_Ping struct {
-	Ping *Ping `protobuf:"bytes,1,opt,name=ping,oneof"`
-}
-type FlockRequest_Batch struct {
-	Batch *BatchInsertRequest `protobuf:"bytes,2,opt,name=batch,oneof"`
+type FlockRequest_Start struct {
+	Start *Start `protobuf:"bytes,1,opt,name=start,proto3,oneof"`
 }
 
-func (*FlockRequest_Ping) isFlockRequest_Value()  {}
+type FlockRequest_Ping struct {
+	Ping *Ping `protobuf:"bytes,2,opt,name=ping,proto3,oneof"`
+}
+
+type FlockRequest_Batch struct {
+	Batch *Batch `protobuf:"bytes,3,opt,name=batch,proto3,oneof"`
+}
+
+type FlockRequest_End struct {
+	End *EndStream `protobuf:"bytes,4,opt,name=end,proto3,oneof"`
+}
+
+func (*FlockRequest_Start) isFlockRequest_Value() {}
+
+func (*FlockRequest_Ping) isFlockRequest_Value() {}
+
 func (*FlockRequest_Batch) isFlockRequest_Value() {}
+
+func (*FlockRequest_End) isFlockRequest_Value() {}
 
 func (m *FlockRequest) GetValue() isFlockRequest_Value {
 	if m != nil {
 		return m.Value
+	}
+	return nil
+}
+
+func (m *FlockRequest) GetStart() *Start {
+	if x, ok := m.GetValue().(*FlockRequest_Start); ok {
+		return x.Start
 	}
 	return nil
 }
@@ -85,85 +108,28 @@ func (m *FlockRequest) GetPing() *Ping {
 	return nil
 }
 
-func (m *FlockRequest) GetBatch() *BatchInsertRequest {
+func (m *FlockRequest) GetBatch() *Batch {
 	if x, ok := m.GetValue().(*FlockRequest_Batch); ok {
 		return x.Batch
 	}
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*FlockRequest) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _FlockRequest_OneofMarshaler, _FlockRequest_OneofUnmarshaler, _FlockRequest_OneofSizer, []interface{}{
-		(*FlockRequest_Ping)(nil),
-		(*FlockRequest_Batch)(nil),
-	}
-}
-
-func _FlockRequest_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*FlockRequest)
-	// value
-	switch x := m.Value.(type) {
-	case *FlockRequest_Ping:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Ping); err != nil {
-			return err
-		}
-	case *FlockRequest_Batch:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Batch); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("FlockRequest.Value has unexpected type %T", x)
+func (m *FlockRequest) GetEnd() *EndStream {
+	if x, ok := m.GetValue().(*FlockRequest_End); ok {
+		return x.End
 	}
 	return nil
 }
 
-func _FlockRequest_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*FlockRequest)
-	switch tag {
-	case 1: // value.ping
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(Ping)
-		err := b.DecodeMessage(msg)
-		m.Value = &FlockRequest_Ping{msg}
-		return true, err
-	case 2: // value.batch
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(BatchInsertRequest)
-		err := b.DecodeMessage(msg)
-		m.Value = &FlockRequest_Batch{msg}
-		return true, err
-	default:
-		return false, nil
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*FlockRequest) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*FlockRequest_Start)(nil),
+		(*FlockRequest_Ping)(nil),
+		(*FlockRequest_Batch)(nil),
+		(*FlockRequest_End)(nil),
 	}
-}
-
-func _FlockRequest_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*FlockRequest)
-	// value
-	switch x := m.Value.(type) {
-	case *FlockRequest_Ping:
-		s := proto.Size(x.Ping)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FlockRequest_Batch:
-		s := proto.Size(x.Batch)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 type FlockResponse struct {
@@ -180,16 +146,17 @@ func (m *FlockResponse) Reset()         { *m = FlockResponse{} }
 func (m *FlockResponse) String() string { return proto.CompactTextString(m) }
 func (*FlockResponse) ProtoMessage()    {}
 func (*FlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{1}
+	return fileDescriptor_0dfcec39829db5bd, []int{1}
 }
+
 func (m *FlockResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FlockResponse.Unmarshal(m, b)
 }
 func (m *FlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_FlockResponse.Marshal(b, m, deterministic)
 }
-func (dst *FlockResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FlockResponse.Merge(dst, src)
+func (m *FlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FlockResponse.Merge(m, src)
 }
 func (m *FlockResponse) XXX_Size() int {
 	return xxx_messageInfo_FlockResponse.Size(m)
@@ -205,13 +172,15 @@ type isFlockResponse_Value interface {
 }
 
 type FlockResponse_Pong struct {
-	Pong *Pong `protobuf:"bytes,1,opt,name=pong,oneof"`
-}
-type FlockResponse_Batch struct {
-	Batch *BatchInsertResponse `protobuf:"bytes,2,opt,name=batch,oneof"`
+	Pong *Pong `protobuf:"bytes,1,opt,name=pong,proto3,oneof"`
 }
 
-func (*FlockResponse_Pong) isFlockResponse_Value()  {}
+type FlockResponse_Batch struct {
+	Batch *BatchInsertResponse `protobuf:"bytes,2,opt,name=batch,proto3,oneof"`
+}
+
+func (*FlockResponse_Pong) isFlockResponse_Value() {}
+
 func (*FlockResponse_Batch) isFlockResponse_Value() {}
 
 func (m *FlockResponse) GetValue() isFlockResponse_Value {
@@ -235,78 +204,83 @@ func (m *FlockResponse) GetBatch() *BatchInsertResponse {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*FlockResponse) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _FlockResponse_OneofMarshaler, _FlockResponse_OneofUnmarshaler, _FlockResponse_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*FlockResponse) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*FlockResponse_Pong)(nil),
 		(*FlockResponse_Batch)(nil),
 	}
 }
 
-func _FlockResponse_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*FlockResponse)
-	// value
-	switch x := m.Value.(type) {
-	case *FlockResponse_Pong:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Pong); err != nil {
-			return err
-		}
-	case *FlockResponse_Batch:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Batch); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("FlockResponse.Value has unexpected type %T", x)
+type Start struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Database             string   `protobuf:"bytes,2,opt,name=database,proto3" json:"database,omitempty"`
+	Dollar               bool     `protobuf:"varint,3,opt,name=dollar,proto3" json:"dollar,omitempty"`
+	Schema               []byte   `protobuf:"bytes,4,opt,name=schema,proto3" json:"schema,omitempty"`
+	Plugin               []byte   `protobuf:"bytes,5,opt,name=plugin,proto3" json:"plugin,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Start) Reset()         { *m = Start{} }
+func (m *Start) String() string { return proto.CompactTextString(m) }
+func (*Start) ProtoMessage()    {}
+func (*Start) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{2}
+}
+
+func (m *Start) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Start.Unmarshal(m, b)
+}
+func (m *Start) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Start.Marshal(b, m, deterministic)
+}
+func (m *Start) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Start.Merge(m, src)
+}
+func (m *Start) XXX_Size() int {
+	return xxx_messageInfo_Start.Size(m)
+}
+func (m *Start) XXX_DiscardUnknown() {
+	xxx_messageInfo_Start.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Start proto.InternalMessageInfo
+
+func (m *Start) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *Start) GetDatabase() string {
+	if m != nil {
+		return m.Database
+	}
+	return ""
+}
+
+func (m *Start) GetDollar() bool {
+	if m != nil {
+		return m.Dollar
+	}
+	return false
+}
+
+func (m *Start) GetSchema() []byte {
+	if m != nil {
+		return m.Schema
 	}
 	return nil
 }
 
-func _FlockResponse_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*FlockResponse)
-	switch tag {
-	case 1: // value.pong
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(Pong)
-		err := b.DecodeMessage(msg)
-		m.Value = &FlockResponse_Pong{msg}
-		return true, err
-	case 2: // value.batch
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(BatchInsertResponse)
-		err := b.DecodeMessage(msg)
-		m.Value = &FlockResponse_Batch{msg}
-		return true, err
-	default:
-		return false, nil
+func (m *Start) GetPlugin() []byte {
+	if m != nil {
+		return m.Plugin
 	}
-}
-
-func _FlockResponse_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*FlockResponse)
-	// value
-	switch x := m.Value.(type) {
-	case *FlockResponse_Pong:
-		s := proto.Size(x.Pong)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *FlockResponse_Batch:
-		s := proto.Size(x.Batch)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
+	return nil
 }
 
 type Ping struct {
@@ -319,16 +293,17 @@ func (m *Ping) Reset()         { *m = Ping{} }
 func (m *Ping) String() string { return proto.CompactTextString(m) }
 func (*Ping) ProtoMessage()    {}
 func (*Ping) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{2}
+	return fileDescriptor_0dfcec39829db5bd, []int{3}
 }
+
 func (m *Ping) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Ping.Unmarshal(m, b)
 }
 func (m *Ping) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Ping.Marshal(b, m, deterministic)
 }
-func (dst *Ping) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Ping.Merge(dst, src)
+func (m *Ping) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Ping.Merge(m, src)
 }
 func (m *Ping) XXX_Size() int {
 	return xxx_messageInfo_Ping.Size(m)
@@ -349,16 +324,17 @@ func (m *Pong) Reset()         { *m = Pong{} }
 func (m *Pong) String() string { return proto.CompactTextString(m) }
 func (*Pong) ProtoMessage()    {}
 func (*Pong) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{3}
+	return fileDescriptor_0dfcec39829db5bd, []int{4}
 }
+
 func (m *Pong) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Pong.Unmarshal(m, b)
 }
 func (m *Pong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Pong.Marshal(b, m, deterministic)
 }
-func (dst *Pong) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Pong.Merge(dst, src)
+func (m *Pong) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Pong.Merge(m, src)
 }
 func (m *Pong) XXX_Size() int {
 	return xxx_messageInfo_Pong.Size(m)
@@ -369,62 +345,377 @@ func (m *Pong) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Pong proto.InternalMessageInfo
 
-type BatchInsertRequest struct {
-	Data                 []byte   `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	Table                string   `protobuf:"bytes,2,opt,name=table" json:"table,omitempty"`
-	TableName            string   `protobuf:"bytes,3,opt,name=table_name,json=tableName" json:"table_name,omitempty"`
+type DBPing struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Database             string   `protobuf:"bytes,2,opt,name=database,proto3" json:"database,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *BatchInsertRequest) Reset()         { *m = BatchInsertRequest{} }
-func (m *BatchInsertRequest) String() string { return proto.CompactTextString(m) }
-func (*BatchInsertRequest) ProtoMessage()    {}
-func (*BatchInsertRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{4}
-}
-func (m *BatchInsertRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_BatchInsertRequest.Unmarshal(m, b)
-}
-func (m *BatchInsertRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_BatchInsertRequest.Marshal(b, m, deterministic)
-}
-func (dst *BatchInsertRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BatchInsertRequest.Merge(dst, src)
-}
-func (m *BatchInsertRequest) XXX_Size() int {
-	return xxx_messageInfo_BatchInsertRequest.Size(m)
-}
-func (m *BatchInsertRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_BatchInsertRequest.DiscardUnknown(m)
+func (m *DBPing) Reset()         { *m = DBPing{} }
+func (m *DBPing) String() string { return proto.CompactTextString(m) }
+func (*DBPing) ProtoMessage()    {}
+func (*DBPing) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{5}
 }
 
-var xxx_messageInfo_BatchInsertRequest proto.InternalMessageInfo
+func (m *DBPing) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DBPing.Unmarshal(m, b)
+}
+func (m *DBPing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DBPing.Marshal(b, m, deterministic)
+}
+func (m *DBPing) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DBPing.Merge(m, src)
+}
+func (m *DBPing) XXX_Size() int {
+	return xxx_messageInfo_DBPing.Size(m)
+}
+func (m *DBPing) XXX_DiscardUnknown() {
+	xxx_messageInfo_DBPing.DiscardUnknown(m)
+}
 
-func (m *BatchInsertRequest) GetData() []byte {
+var xxx_messageInfo_DBPing proto.InternalMessageInfo
+
+func (m *DBPing) GetUrl() string {
 	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-func (m *BatchInsertRequest) GetTable() string {
-	if m != nil {
-		return m.Table
+		return m.Url
 	}
 	return ""
 }
 
-func (m *BatchInsertRequest) GetTableName() string {
+func (m *DBPing) GetDatabase() string {
+	if m != nil {
+		return m.Database
+	}
+	return ""
+}
+
+type DBPong struct {
+	Schema               []byte   `protobuf:"bytes,1,opt,name=schema,proto3" json:"schema,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DBPong) Reset()         { *m = DBPong{} }
+func (m *DBPong) String() string { return proto.CompactTextString(m) }
+func (*DBPong) ProtoMessage()    {}
+func (*DBPong) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{6}
+}
+
+func (m *DBPong) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DBPong.Unmarshal(m, b)
+}
+func (m *DBPong) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DBPong.Marshal(b, m, deterministic)
+}
+func (m *DBPong) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DBPong.Merge(m, src)
+}
+func (m *DBPong) XXX_Size() int {
+	return xxx_messageInfo_DBPong.Size(m)
+}
+func (m *DBPong) XXX_DiscardUnknown() {
+	xxx_messageInfo_DBPong.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DBPong proto.InternalMessageInfo
+
+func (m *DBPong) GetSchema() []byte {
+	if m != nil {
+		return m.Schema
+	}
+	return nil
+}
+
+type Batch struct {
+	// Types that are valid to be assigned to Value:
+	//	*Batch_Head
+	//	*Batch_Chunk
+	//	*Batch_Tail
+	Value                isBatch_Value `protobuf_oneof:"value"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
+}
+
+func (m *Batch) Reset()         { *m = Batch{} }
+func (m *Batch) String() string { return proto.CompactTextString(m) }
+func (*Batch) ProtoMessage()    {}
+func (*Batch) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{7}
+}
+
+func (m *Batch) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Batch.Unmarshal(m, b)
+}
+func (m *Batch) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Batch.Marshal(b, m, deterministic)
+}
+func (m *Batch) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Batch.Merge(m, src)
+}
+func (m *Batch) XXX_Size() int {
+	return xxx_messageInfo_Batch.Size(m)
+}
+func (m *Batch) XXX_DiscardUnknown() {
+	xxx_messageInfo_Batch.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Batch proto.InternalMessageInfo
+
+type isBatch_Value interface {
+	isBatch_Value()
+}
+
+type Batch_Head struct {
+	Head *BatchInsertHead `protobuf:"bytes,1,opt,name=head,proto3,oneof"`
+}
+
+type Batch_Chunk struct {
+	Chunk *DataStream `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
+}
+
+type Batch_Tail struct {
+	Tail *BatchInsertTail `protobuf:"bytes,3,opt,name=tail,proto3,oneof"`
+}
+
+func (*Batch_Head) isBatch_Value() {}
+
+func (*Batch_Chunk) isBatch_Value() {}
+
+func (*Batch_Tail) isBatch_Value() {}
+
+func (m *Batch) GetValue() isBatch_Value {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+func (m *Batch) GetHead() *BatchInsertHead {
+	if x, ok := m.GetValue().(*Batch_Head); ok {
+		return x.Head
+	}
+	return nil
+}
+
+func (m *Batch) GetChunk() *DataStream {
+	if x, ok := m.GetValue().(*Batch_Chunk); ok {
+		return x.Chunk
+	}
+	return nil
+}
+
+func (m *Batch) GetTail() *BatchInsertTail {
+	if x, ok := m.GetValue().(*Batch_Tail); ok {
+		return x.Tail
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Batch) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Batch_Head)(nil),
+		(*Batch_Chunk)(nil),
+		(*Batch_Tail)(nil),
+	}
+}
+
+type EndStream struct {
+	Records              []byte   `protobuf:"bytes,1,opt,name=records,proto3" json:"records,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EndStream) Reset()         { *m = EndStream{} }
+func (m *EndStream) String() string { return proto.CompactTextString(m) }
+func (*EndStream) ProtoMessage()    {}
+func (*EndStream) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{8}
+}
+
+func (m *EndStream) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EndStream.Unmarshal(m, b)
+}
+func (m *EndStream) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EndStream.Marshal(b, m, deterministic)
+}
+func (m *EndStream) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EndStream.Merge(m, src)
+}
+func (m *EndStream) XXX_Size() int {
+	return xxx_messageInfo_EndStream.Size(m)
+}
+func (m *EndStream) XXX_DiscardUnknown() {
+	xxx_messageInfo_EndStream.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EndStream proto.InternalMessageInfo
+
+func (m *EndStream) GetRecords() []byte {
+	if m != nil {
+		return m.Records
+	}
+	return nil
+}
+
+type BatchInsertHead struct {
+	BatchId              string   `protobuf:"bytes,1,opt,name=BatchId,proto3" json:"BatchId,omitempty"`
+	TableName            string   `protobuf:"bytes,2,opt,name=tableName,proto3" json:"tableName,omitempty"`
+	Chunks               int64    `protobuf:"varint,3,opt,name=chunks,proto3" json:"chunks,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *BatchInsertHead) Reset()         { *m = BatchInsertHead{} }
+func (m *BatchInsertHead) String() string { return proto.CompactTextString(m) }
+func (*BatchInsertHead) ProtoMessage()    {}
+func (*BatchInsertHead) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{9}
+}
+
+func (m *BatchInsertHead) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BatchInsertHead.Unmarshal(m, b)
+}
+func (m *BatchInsertHead) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BatchInsertHead.Marshal(b, m, deterministic)
+}
+func (m *BatchInsertHead) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BatchInsertHead.Merge(m, src)
+}
+func (m *BatchInsertHead) XXX_Size() int {
+	return xxx_messageInfo_BatchInsertHead.Size(m)
+}
+func (m *BatchInsertHead) XXX_DiscardUnknown() {
+	xxx_messageInfo_BatchInsertHead.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BatchInsertHead proto.InternalMessageInfo
+
+func (m *BatchInsertHead) GetBatchId() string {
+	if m != nil {
+		return m.BatchId
+	}
+	return ""
+}
+
+func (m *BatchInsertHead) GetTableName() string {
 	if m != nil {
 		return m.TableName
 	}
 	return ""
 }
 
+func (m *BatchInsertHead) GetChunks() int64 {
+	if m != nil {
+		return m.Chunks
+	}
+	return 0
+}
+
+type DataStream struct {
+	BatchId              string   `protobuf:"bytes,1,opt,name=BatchId,proto3" json:"BatchId,omitempty"`
+	Index                int64    `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
+	Data                 []byte   `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DataStream) Reset()         { *m = DataStream{} }
+func (m *DataStream) String() string { return proto.CompactTextString(m) }
+func (*DataStream) ProtoMessage()    {}
+func (*DataStream) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{10}
+}
+
+func (m *DataStream) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DataStream.Unmarshal(m, b)
+}
+func (m *DataStream) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DataStream.Marshal(b, m, deterministic)
+}
+func (m *DataStream) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DataStream.Merge(m, src)
+}
+func (m *DataStream) XXX_Size() int {
+	return xxx_messageInfo_DataStream.Size(m)
+}
+func (m *DataStream) XXX_DiscardUnknown() {
+	xxx_messageInfo_DataStream.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DataStream proto.InternalMessageInfo
+
+func (m *DataStream) GetBatchId() string {
+	if m != nil {
+		return m.BatchId
+	}
+	return ""
+}
+
+func (m *DataStream) GetIndex() int64 {
+	if m != nil {
+		return m.Index
+	}
+	return 0
+}
+
+func (m *DataStream) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type BatchInsertTail struct {
+	BatchId              string   `protobuf:"bytes,1,opt,name=BatchId,proto3" json:"BatchId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *BatchInsertTail) Reset()         { *m = BatchInsertTail{} }
+func (m *BatchInsertTail) String() string { return proto.CompactTextString(m) }
+func (*BatchInsertTail) ProtoMessage()    {}
+func (*BatchInsertTail) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0dfcec39829db5bd, []int{11}
+}
+
+func (m *BatchInsertTail) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BatchInsertTail.Unmarshal(m, b)
+}
+func (m *BatchInsertTail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BatchInsertTail.Marshal(b, m, deterministic)
+}
+func (m *BatchInsertTail) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BatchInsertTail.Merge(m, src)
+}
+func (m *BatchInsertTail) XXX_Size() int {
+	return xxx_messageInfo_BatchInsertTail.Size(m)
+}
+func (m *BatchInsertTail) XXX_DiscardUnknown() {
+	xxx_messageInfo_BatchInsertTail.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BatchInsertTail proto.InternalMessageInfo
+
+func (m *BatchInsertTail) GetBatchId() string {
+	if m != nil {
+		return m.BatchId
+	}
+	return ""
+}
+
 type BatchInsertResponse struct {
-	Success              bool     `protobuf:"varint,1,opt,name=success" json:"success,omitempty"`
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -434,16 +725,17 @@ func (m *BatchInsertResponse) Reset()         { *m = BatchInsertResponse{} }
 func (m *BatchInsertResponse) String() string { return proto.CompactTextString(m) }
 func (*BatchInsertResponse) ProtoMessage()    {}
 func (*BatchInsertResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_flock_d805bb5d4305963c, []int{5}
+	return fileDescriptor_0dfcec39829db5bd, []int{12}
 }
+
 func (m *BatchInsertResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_BatchInsertResponse.Unmarshal(m, b)
 }
 func (m *BatchInsertResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_BatchInsertResponse.Marshal(b, m, deterministic)
 }
-func (dst *BatchInsertResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BatchInsertResponse.Merge(dst, src)
+func (m *BatchInsertResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BatchInsertResponse.Merge(m, src)
 }
 func (m *BatchInsertResponse) XXX_Size() int {
 	return xxx_messageInfo_BatchInsertResponse.Size(m)
@@ -464,10 +756,57 @@ func (m *BatchInsertResponse) GetSuccess() bool {
 func init() {
 	proto.RegisterType((*FlockRequest)(nil), "flock.FlockRequest")
 	proto.RegisterType((*FlockResponse)(nil), "flock.FlockResponse")
+	proto.RegisterType((*Start)(nil), "flock.Start")
 	proto.RegisterType((*Ping)(nil), "flock.Ping")
 	proto.RegisterType((*Pong)(nil), "flock.Pong")
-	proto.RegisterType((*BatchInsertRequest)(nil), "flock.BatchInsertRequest")
+	proto.RegisterType((*DBPing)(nil), "flock.DBPing")
+	proto.RegisterType((*DBPong)(nil), "flock.DBPong")
+	proto.RegisterType((*Batch)(nil), "flock.Batch")
+	proto.RegisterType((*EndStream)(nil), "flock.EndStream")
+	proto.RegisterType((*BatchInsertHead)(nil), "flock.BatchInsertHead")
+	proto.RegisterType((*DataStream)(nil), "flock.DataStream")
+	proto.RegisterType((*BatchInsertTail)(nil), "flock.BatchInsertTail")
 	proto.RegisterType((*BatchInsertResponse)(nil), "flock.BatchInsertResponse")
+}
+
+func init() { proto.RegisterFile("protos/flock.proto", fileDescriptor_0dfcec39829db5bd) }
+
+var fileDescriptor_0dfcec39829db5bd = []byte{
+	// 542 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xd1, 0x6e, 0xd3, 0x30,
+	0x14, 0x6d, 0x68, 0xd3, 0xb5, 0x77, 0x1d, 0x0c, 0x6f, 0x9a, 0xa2, 0x8a, 0x87, 0x61, 0x0d, 0x69,
+	0x08, 0xd4, 0xa1, 0x22, 0xed, 0x03, 0xaa, 0x82, 0xca, 0x0b, 0x9a, 0x3c, 0x7e, 0xc0, 0x4d, 0x4c,
+	0x1a, 0x2d, 0xb5, 0x4b, 0xec, 0x20, 0x5e, 0xf8, 0x0a, 0x1e, 0xf8, 0x09, 0x3e, 0x12, 0xdd, 0x6b,
+	0xa7, 0x4d, 0x61, 0x20, 0xed, 0xa9, 0x3e, 0xc7, 0xc7, 0xa7, 0xc7, 0xc7, 0x76, 0x80, 0x6d, 0x2a,
+	0xe3, 0x8c, 0xbd, 0xfa, 0x5c, 0x9a, 0xf4, 0x6e, 0x42, 0x80, 0xc5, 0x04, 0xf8, 0xaf, 0x08, 0x46,
+	0xef, 0x71, 0x24, 0xd4, 0x97, 0x5a, 0x59, 0xc7, 0x2e, 0x20, 0xb6, 0x4e, 0x56, 0x2e, 0x89, 0xce,
+	0xa3, 0xcb, 0xc3, 0xe9, 0x68, 0xe2, 0x17, 0xdd, 0x22, 0xb7, 0xe8, 0x08, 0x3f, 0xc9, 0x9e, 0x43,
+	0x6f, 0x53, 0xe8, 0x3c, 0x79, 0x44, 0xa2, 0xc3, 0x20, 0xba, 0x29, 0x74, 0xbe, 0xe8, 0x08, 0x9a,
+	0x42, 0xa3, 0xa5, 0x74, 0xe9, 0x2a, 0xe9, 0xee, 0x19, 0xcd, 0x90, 0x43, 0x23, 0x9a, 0x64, 0x17,
+	0xd0, 0x55, 0x3a, 0x4b, 0x7a, 0xa4, 0x39, 0x0e, 0x9a, 0x77, 0x3a, 0xbb, 0x75, 0x95, 0x92, 0xeb,
+	0x45, 0x47, 0xe0, 0xf4, 0xec, 0x00, 0xe2, 0xaf, 0xb2, 0xac, 0x15, 0x37, 0x70, 0x14, 0xd2, 0xda,
+	0x8d, 0xd1, 0x56, 0x51, 0x10, 0xa3, 0xf3, 0x90, 0x76, 0x1b, 0xc4, 0x84, 0x20, 0x46, 0xe7, 0x6c,
+	0xda, 0x04, 0xf1, 0x61, 0xc7, 0xed, 0x20, 0x1f, 0xb4, 0x55, 0x95, 0x6b, 0xdc, 0xb6, 0xb1, 0x76,
+	0x7f, 0xf8, 0x1d, 0x62, 0xda, 0x3a, 0x3b, 0x86, 0x6e, 0x5d, 0x95, 0xf4, 0x3f, 0x43, 0x81, 0x43,
+	0x36, 0x86, 0x41, 0x26, 0x9d, 0x5c, 0x4a, 0xab, 0xc8, 0x7a, 0x28, 0xb6, 0x98, 0x9d, 0x41, 0x3f,
+	0x33, 0x65, 0x29, 0x2b, 0xda, 0xfd, 0x40, 0x04, 0x84, 0xbc, 0x4d, 0x57, 0x6a, 0x2d, 0x69, 0xc7,
+	0x23, 0x11, 0x10, 0xf2, 0x9b, 0xb2, 0xce, 0x0b, 0x9d, 0xc4, 0x9e, 0xf7, 0x88, 0xf7, 0xa1, 0x87,
+	0xa5, 0xd2, 0xaf, 0xd1, 0x39, 0xbf, 0x86, 0xfe, 0x7c, 0x86, 0xcc, 0xc3, 0xf2, 0xf0, 0x73, 0x5a,
+	0x87, 0x6d, 0xec, 0x12, 0x44, 0xed, 0x04, 0xfc, 0x67, 0x04, 0x31, 0x55, 0xc2, 0x5e, 0x43, 0x6f,
+	0xa5, 0x64, 0x16, 0x2a, 0x3d, 0xfb, 0xbb, 0xae, 0x85, 0x92, 0x19, 0xb6, 0x8b, 0x2a, 0xf6, 0x12,
+	0xe2, 0x74, 0x55, 0xeb, 0xbb, 0xd0, 0xee, 0xd3, 0x20, 0x9f, 0x4b, 0x27, 0xb7, 0x67, 0xe8, 0x15,
+	0x68, 0xec, 0x64, 0x51, 0x86, 0x0b, 0x71, 0x8f, 0xf1, 0x27, 0x59, 0x94, 0x68, 0x8c, 0xaa, 0xdd,
+	0x11, 0xbc, 0x80, 0xe1, 0xf6, 0x42, 0xb0, 0x04, 0x0e, 0x2a, 0x95, 0x9a, 0x2a, 0xb3, 0x21, 0x7f,
+	0x03, 0xb9, 0x84, 0x27, 0x7f, 0x64, 0x44, 0xb1, 0xa7, 0xb2, 0xd0, 0x53, 0x03, 0xd9, 0x33, 0x18,
+	0x3a, 0xb9, 0x2c, 0xd5, 0x47, 0xb9, 0x6e, 0xca, 0xda, 0x11, 0xd8, 0x11, 0x25, 0xb6, 0x14, 0xb5,
+	0x2b, 0x02, 0xe2, 0x37, 0x00, 0xbb, 0x7d, 0xfd, 0xc7, 0xfd, 0x14, 0xe2, 0x42, 0x67, 0xea, 0x1b,
+	0x39, 0x77, 0x85, 0x07, 0x8c, 0x41, 0x0f, 0xcf, 0x83, 0x3c, 0x47, 0x82, 0xc6, 0xfc, 0xd5, 0x5e,
+	0x68, 0xdc, 0xff, 0xbf, 0x6d, 0xf9, 0x15, 0x9c, 0xdc, 0x73, 0x69, 0x71, 0x81, 0xad, 0xd3, 0x54,
+	0x59, 0x5f, 0xc9, 0x40, 0x34, 0x70, 0xfa, 0x23, 0x82, 0x98, 0x9e, 0x0b, 0xe3, 0xd0, 0x5f, 0x28,
+	0x59, 0xba, 0x15, 0x6b, 0xbf, 0xd5, 0x71, 0xfb, 0xbd, 0xb0, 0x09, 0x3c, 0x9e, 0x87, 0xfb, 0x12,
+	0xb4, 0x47, 0xcd, 0x61, 0xd2, 0x95, 0x1b, 0xb7, 0x20, 0xea, 0xaf, 0x1b, 0xf3, 0x93, 0xc0, 0xb7,
+	0xbf, 0x23, 0xe3, 0xd3, 0x7d, 0xd2, 0x67, 0xbd, 0x8c, 0xde, 0x44, 0xcb, 0x3e, 0x7d, 0x80, 0xde,
+	0xfe, 0x0e, 0x00, 0x00, 0xff, 0xff, 0xae, 0x14, 0xe6, 0xe6, 0x96, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -478,9 +817,12 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Flock service
-
+// FlockClient is the client API for Flock service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type FlockClient interface {
+	Health(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*Pong, error)
+	DatabaseHealth(ctx context.Context, in *DBPing, opts ...grpc.CallOption) (*DBPong, error)
 	Flock(ctx context.Context, opts ...grpc.CallOption) (Flock_FlockClient, error)
 }
 
@@ -492,8 +834,26 @@ func NewFlockClient(cc *grpc.ClientConn) FlockClient {
 	return &flockClient{cc}
 }
 
+func (c *flockClient) Health(ctx context.Context, in *Ping, opts ...grpc.CallOption) (*Pong, error) {
+	out := new(Pong)
+	err := c.cc.Invoke(ctx, "/flock.Flock/Health", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flockClient) DatabaseHealth(ctx context.Context, in *DBPing, opts ...grpc.CallOption) (*DBPong, error) {
+	out := new(DBPong)
+	err := c.cc.Invoke(ctx, "/flock.Flock/DatabaseHealth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *flockClient) Flock(ctx context.Context, opts ...grpc.CallOption) (Flock_FlockClient, error) {
-	stream, err := grpc.NewClientStream(ctx, &_Flock_serviceDesc.Streams[0], c.cc, "/flock.Flock/Flock", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Flock_serviceDesc.Streams[0], "/flock.Flock/Flock", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -523,14 +883,51 @@ func (x *flockFlockClient) Recv() (*FlockResponse, error) {
 	return m, nil
 }
 
-// Server API for Flock service
-
+// FlockServer is the server API for Flock service.
 type FlockServer interface {
+	Health(context.Context, *Ping) (*Pong, error)
+	DatabaseHealth(context.Context, *DBPing) (*DBPong, error)
 	Flock(Flock_FlockServer) error
 }
 
 func RegisterFlockServer(s *grpc.Server, srv FlockServer) {
 	s.RegisterService(&_Flock_serviceDesc, srv)
+}
+
+func _Flock_Health_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Ping)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlockServer).Health(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flock.Flock/Health",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlockServer).Health(ctx, req.(*Ping))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flock_DatabaseHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DBPing)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlockServer).DatabaseHealth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/flock.Flock/DatabaseHealth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlockServer).DatabaseHealth(ctx, req.(*DBPing))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Flock_Flock_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -562,7 +959,16 @@ func (x *flockFlockServer) Recv() (*FlockRequest, error) {
 var _Flock_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "flock.Flock",
 	HandlerType: (*FlockServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Health",
+			Handler:    _Flock_Health_Handler,
+		},
+		{
+			MethodName: "DatabaseHealth",
+			Handler:    _Flock_DatabaseHealth_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Flock",
@@ -572,28 +978,4 @@ var _Flock_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Metadata: "protos/flock.proto",
-}
-
-func init() { proto.RegisterFile("protos/flock.proto", fileDescriptor_flock_d805bb5d4305963c) }
-
-var fileDescriptor_flock_d805bb5d4305963c = []byte{
-	// 273 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0xc1, 0x4f, 0xf2, 0x40,
-	0x10, 0xc5, 0xe9, 0xf7, 0x75, 0x41, 0x06, 0xbc, 0x0c, 0x1c, 0x2a, 0x89, 0x89, 0xf6, 0xc4, 0x09,
-	0xb4, 0x26, 0x5e, 0x4d, 0x38, 0x18, 0xbc, 0x18, 0xb3, 0x77, 0x63, 0xb6, 0x75, 0xad, 0xc4, 0x76,
-	0xa7, 0xb2, 0x5b, 0xff, 0x7e, 0xd3, 0xd9, 0x25, 0x91, 0xd0, 0x53, 0xdf, 0x9b, 0x99, 0xce, 0xef,
-	0xb5, 0x03, 0xd8, 0xec, 0xc9, 0x91, 0x5d, 0x7f, 0x54, 0x54, 0x7c, 0xad, 0xd8, 0xa0, 0x60, 0x93,
-	0xd6, 0x30, 0x7d, 0xec, 0x84, 0xd4, 0xdf, 0xad, 0xb6, 0x0e, 0xaf, 0x21, 0x6e, 0x76, 0xa6, 0x4c,
-	0xa2, 0xab, 0x68, 0x39, 0xc9, 0x26, 0x2b, 0xff, 0xca, 0xcb, 0xce, 0x94, 0xdb, 0x81, 0xe4, 0x16,
-	0xde, 0x82, 0xc8, 0x95, 0x2b, 0x3e, 0x93, 0x7f, 0x3c, 0x73, 0x11, 0x66, 0x36, 0x5d, 0xed, 0xc9,
-	0x58, 0xbd, 0x77, 0x61, 0xd9, 0x76, 0x20, 0xfd, 0xe4, 0x66, 0x04, 0xe2, 0x47, 0x55, 0xad, 0x4e,
-	0x09, 0xce, 0x03, 0xce, 0x36, 0x64, 0xac, 0x66, 0x1e, 0x9d, 0xf2, 0x28, 0xf0, 0xc8, 0x94, 0x98,
-	0x1d, 0xf3, 0x16, 0x7d, 0x3c, 0xbf, 0xad, 0x07, 0x38, 0x84, 0xb8, 0x0b, 0xcf, 0x4f, 0x32, 0x65,
-	0xfa, 0x0a, 0x78, 0x1a, 0x14, 0x11, 0xe2, 0x77, 0xe5, 0x14, 0xa7, 0x98, 0x4a, 0xd6, 0x38, 0x07,
-	0xe1, 0x54, 0x5e, 0x69, 0xc6, 0x8e, 0xa5, 0x37, 0x78, 0x09, 0xc0, 0xe2, 0xcd, 0xa8, 0x5a, 0x27,
-	0xff, 0xb9, 0x35, 0xe6, 0xca, 0xb3, 0xaa, 0x75, 0xba, 0x86, 0x59, 0x4f, 0x2e, 0x4c, 0x60, 0x64,
-	0xdb, 0xa2, 0xd0, 0xd6, 0x32, 0xe2, 0x4c, 0x1e, 0x6c, 0xf6, 0x00, 0x82, 0x7f, 0x08, 0xde, 0x1f,
-	0xc4, 0x2c, 0x7c, 0xdf, 0xdf, 0xb3, 0x2c, 0xe6, 0xc7, 0x45, 0xbf, 0x76, 0x19, 0xdd, 0x44, 0xf9,
-	0x90, 0xcf, 0x79, 0xf7, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x10, 0x4e, 0x51, 0x2f, 0xe4, 0x01, 0x00,
-	0x00,
 }
